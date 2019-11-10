@@ -727,6 +727,7 @@ Status DBImpl::WriteLevel0TableGuards(MemTable* mem, VersionEdit* edit,
 
 void DBImpl::CompactMemTableThread() {
   MutexLock l(&mutex_);
+  if(options_.exp_ops.noCompaction) return;
 
   FileLevelFilterBuilder file_level_filter_builder(options_.filter_policy);
 
@@ -957,6 +958,7 @@ Status DBImpl::TEST_CompactMemTable() {
 
 void DBImpl::CompactLevelThread() {
   MutexLock l(&mutex_);
+  if(options_.exp_ops.noCompaction) return;
   FileLevelFilterBuilder file_level_filter_builder(options_.filter_policy);
 
   while (!shutting_down_.Acquire_Load() && !allow_background_activity_) {

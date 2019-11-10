@@ -3022,7 +3022,7 @@ unsigned VersionSet::PickCompactionLevel(bool* locked, bool seek_driven, bool* f
   bool no_horizontal_compact = false;
   int count_guard_scores = 0;
   *force_compact = false;
-  for (unsigned i = 1; i + 1 < config::kNumLevels; ++i) {
+  for (unsigned i = 1; i + 1 < config::kNumLevels; ++i) {  
     if (locked[i] || locked[i + 1]) {
       continue;
     }

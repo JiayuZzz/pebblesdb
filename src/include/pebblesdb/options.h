@@ -148,6 +148,12 @@ struct Options {
 
   // Create an Options object with default values for all fields.
   Options();
+
+  struct ExpOps {
+    bool noCompaction{false};
+  };
+
+  ExpOps exp_ops;
 };
 
 // Options that control read operations
