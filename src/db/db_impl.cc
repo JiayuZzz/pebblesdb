@@ -727,13 +727,12 @@ Status DBImpl::WriteLevel0TableGuards(MemTable* mem, VersionEdit* edit,
 
 void DBImpl::CompactMemTableThread() {
   MutexLock l(&mutex_);
-  if(options_.exp_ops.noCompaction) return;
 
   FileLevelFilterBuilder file_level_filter_builder(options_.filter_policy);
 
   int cnt = 0;
   bool first_memtable_compaction = true;
-  while (!shutting_down_.Acquire_Load() && !allow_background_activity_) {
+  while (options_.exp_ops.noCompaction || (!shutting_down_.Acquire_Load() && !allow_background_activity_)) {
     bg_memtable_cv_.Wait();
   }
   while (!shutting_down_.Acquire_Load()) {
@@ -961,7 +960,7 @@ void DBImpl::CompactLevelThread() {
   if(options_.exp_ops.noCompaction) return;
   FileLevelFilterBuilder file_level_filter_builder(options_.filter_policy);
 
-  while (!shutting_down_.Acquire_Load() && !allow_background_activity_) {
+  while (options_.exp_ops.noCompaction || (!shutting_down_.Acquire_Load() && !allow_background_activity_)) {
     bg_compaction_cv_.Wait();
   }
   while (!shutting_down_.Acquire_Load()) {
@@ -2258,6 +2257,7 @@ bool DBImpl::GetProperty(const Slice& property, std::string* value) {
         value->append(buf);
       }
     }
+    versions_->timer->Print();
     return true;
   } else if (in == "sstables") {
     *value = versions_->current()->DebugString();

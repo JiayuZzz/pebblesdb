@@ -13,7 +13,7 @@
 #include "util/logging.h"
 
 //#define TIMER_LOG
-//#define TIMER_LOG_SEEK
+#define TIMER_LOG_SEEK
 //#define TIMER_LOG_SIMPLE
 
 #define NUM_SEEK_THREADS 4
@@ -352,6 +352,11 @@ public:
 		timer_micros[step] += Env::Default()->NowMicros() - micros_array[step];
 		timer_count[step]++;
 		timer_count_additional[step] += additional_count;
+	}
+
+	void Print(){
+		printf("seq seek time %lu, cnt %lu\n", timer_micros[SEEK_SEQUENTIAL_TOTAL], timer_count[SEEK_SEQUENTIAL_TOTAL]);
+		printf("seek next time %lu, cnt %lu\n", timer_micros[SEEK_NEXT], timer_count[SEEK_NEXT]);
 	}
 
 	void clear() {
