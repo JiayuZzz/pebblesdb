@@ -15,6 +15,11 @@
 #include "util/logging.h"
 #include "util/mutexlock.h"
 #include "util/random.h"
+#include "atomic"
+
+std::atomic<uint64_t> seek_time{0};
+std::atomic<uint64_t> next_time{0};
+leveldb::Env* env = leveldb::Env::Default();
 
 namespace leveldb {
 
@@ -159,6 +164,7 @@ inline bool DBIter::ParseKey(ParsedInternalKey* ikey) {
 
 void DBIter::Next() {
   assert(valid_);
+  uint64_t start = env->NowMicros();
 
   if (direction_ == kReverse) {  // Switch directions?
     direction_ = kForward;
@@ -182,6 +188,7 @@ void DBIter::Next() {
   }
 
   FindNextUserEntry(true, &saved_key_);
+  next_time += env->NowMicros() - start;
 }
 
 void DBIter::FindNextUserEntry(bool skipping, std::string* skip) {
@@ -288,6 +295,7 @@ void DBIter::FindPrevUserEntry() {
 }
 
 void DBIter::Seek(const Slice& target) {
+  uint64_t start = env->NowMicros();
   direction_ = kForward;
   ClearSavedValue();
   saved_key_.clear();
@@ -299,6 +307,7 @@ void DBIter::Seek(const Slice& target) {
   } else {
     valid_ = false;
   }
+  seek_time += env->NowMicros() - start;
 }
 
 void DBIter::SeekToFirst() {

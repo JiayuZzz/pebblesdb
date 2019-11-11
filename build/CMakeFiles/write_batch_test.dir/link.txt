@@ -1,0 +1,1 @@
+/usr/bin/c++   -std=c++11 -Wall -Wno-variadic-macros -fno-builtin-memcmp -fno-builtin-memmove   CMakeFiles/write_batch_test.dir/src/util/testharness.cc.o CMakeFiles/write_batch_test.dir/src/util/testutil.cc.o CMakeFiles/write_batch_test.dir/src/db/write_batch_test.cc.o  -o write_batch_test libpebblesdb.a -lsnappy -pthread 
