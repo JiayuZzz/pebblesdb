@@ -1015,6 +1015,8 @@ table/format.h
 /home/kvgroup/wujiayu/pebblesdbnobug/src/table/table/format.h
 table/iterator_wrapper.h
 /home/kvgroup/wujiayu/pebblesdbnobug/src/table/table/iterator_wrapper.h
+atomic
+/home/kvgroup/wujiayu/pebblesdbnobug/src/table/atomic
 
 /home/kvgroup/wujiayu/pebblesdbnobug/src/util/arena.cc
 util/arena.h

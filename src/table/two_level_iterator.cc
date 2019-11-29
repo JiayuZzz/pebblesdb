@@ -8,6 +8,10 @@
 #include "table/block.h"
 #include "table/format.h"
 #include "table/iterator_wrapper.h"
+#include "atomic"
+
+std::atomic<uint64_t> init_time{0};
+extern leveldb::Env* env;
 
 namespace leveldb {
 
@@ -346,6 +350,7 @@ void TwoLevelIteratorGuards::SetDataIterator(Iterator* data_iter) {
 }
 
 void TwoLevelIteratorGuards::InitDataBlock() {
+  uint64_t start_init = env->NowMicros();
   if (!index_iter_.Valid()) {
     SetDataIterator(NULL);
   } else {
@@ -359,6 +364,7 @@ void TwoLevelIteratorGuards::InitDataBlock() {
       SetDataIterator(iter);
     }
   }
+  init_time+=env->NowMicros()-start_init;
 }
 
 
