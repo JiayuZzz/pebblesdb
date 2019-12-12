@@ -37,6 +37,7 @@
 #include "util/logging.h"
 #include "util/mutexlock.h"
 #include "util/timer.h"
+#include "atomic"
 
 #include <iostream>
 
@@ -55,6 +56,10 @@
 	#define start_timer_simple(s)
 	#define record_timer_simple(s)
 #endif
+
+extern std::atomic<uint64_t> pebbles_seek_time;
+extern std::atomic<uint64_t> pebbles_next_time;
+extern std::atomic<uint64_t> init_data_block_time;
 
 namespace leveldb {
 
@@ -727,6 +732,8 @@ Status DBImpl::WriteLevel0TableGuards(MemTable* mem, VersionEdit* edit,
 
 void DBImpl::CompactMemTableThread() {
   MutexLock l(&mutex_);
+
+  if(options_.exp_ops.noCompaction) return;
 
   FileLevelFilterBuilder file_level_filter_builder(options_.filter_policy);
 
@@ -2258,6 +2265,8 @@ bool DBImpl::GetProperty(const Slice& property, std::string* value) {
       }
     }
     versions_->timer->Print();
+    printf("db iter seek time %lu, next time %lu\n",pebbles_seek_time.load(), pebbles_next_time.load());
+    printf("init data block time: %lu\n",init_data_block_time.load());
     return true;
   } else if (in == "sstables") {
     *value = versions_->current()->DebugString();

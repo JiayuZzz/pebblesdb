@@ -80,3 +80,4 @@ gdb.txt
 .settings/
 nbproject/
 CMakeFiles
+build/

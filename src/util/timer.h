@@ -356,7 +356,8 @@ public:
 
 	void Print(){
 		printf("seq seek time %lu, cnt %lu\n", timer_micros[SEEK_SEQUENTIAL_TOTAL], timer_count[SEEK_SEQUENTIAL_TOTAL]);
-		printf("seek next time %lu, cnt %lu\n", timer_micros[SEEK_NEXT], timer_count[SEEK_NEXT]);
+		printf("seq seek next time %lu, cnt %lu\n", timer_micros[SEEK_NEXT], timer_count[SEEK_NEXT]);
+		printf("par seek time %lu, cnt %lu\n", timer_micros[SEEK_PARALLEL_TOTAL], timer_count[SEEK_PARALLEL_TOTAL]);
 	}
 
 	void clear() {
