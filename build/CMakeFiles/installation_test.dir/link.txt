@@ -1,1 +1,0 @@
-/usr/bin/c++   -std=c++11 -Wall -Wno-variadic-macros -fno-builtin-memcmp -fno-builtin-memmove   CMakeFiles/installation_test.dir/src/util/testharness.cc.o CMakeFiles/installation_test.dir/src/util/testutil.cc.o CMakeFiles/installation_test.dir/src/demo/installation_test.cc.o  -o installation_test libpebblesdb.a -lsnappy -pthread 
