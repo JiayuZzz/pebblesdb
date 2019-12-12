@@ -17,8 +17,8 @@
 #include "util/random.h"
 #include "atomic"
 
-std::atomic<uint64_t> seek_time{0};
-std::atomic<uint64_t> next_time{0};
+std::atomic<uint64_t> pebbles_seek_time{0};
+std::atomic<uint64_t> pebbles_next_time{0};
 leveldb::Env* env = leveldb::Env::Default();
 
 namespace leveldb {
@@ -188,7 +188,7 @@ void DBIter::Next() {
   }
 
   FindNextUserEntry(true, &saved_key_);
-  next_time += env->NowMicros() - start;
+  pebbles_next_time += env->NowMicros() - start;
 }
 
 void DBIter::FindNextUserEntry(bool skipping, std::string* skip) {
@@ -307,7 +307,7 @@ void DBIter::Seek(const Slice& target) {
   } else {
     valid_ = false;
   }
-  seek_time += env->NowMicros() - start;
+  pebbles_seek_time += env->NowMicros() - start;
 }
 
 void DBIter::SeekToFirst() {

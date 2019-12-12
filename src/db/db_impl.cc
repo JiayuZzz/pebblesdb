@@ -57,9 +57,9 @@
 	#define record_timer_simple(s)
 #endif
 
-extern std::atomic<uint64_t> seek_time;
-extern std::atomic<uint64_t> next_time;
-extern std::atomic<uint64_t> init_time;
+extern std::atomic<uint64_t> pebbles_seek_time;
+extern std::atomic<uint64_t> pebbles_next_time;
+extern std::atomic<uint64_t> pebbles_init_time;
 
 namespace leveldb {
 
@@ -2261,8 +2261,8 @@ bool DBImpl::GetProperty(const Slice& property, std::string* value) {
         value->append(buf);
       }
     }
-    printf("db iter seek time %lu, next time %lu\n",seek_time.load(), next_time.load());
-    printf("init data block time: %lu\n",init_time.load());
+    printf("db iter seek time %lu, next time %lu\n",pebbles_seek_time.load(), pebbles_next_time.load());
+    printf("init data block time: %lu\n",pebbles_init_time.load());
     return true;
   } else if (in == "sstables") {
     *value = versions_->current()->DebugString();

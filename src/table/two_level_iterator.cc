@@ -10,7 +10,7 @@
 #include "table/iterator_wrapper.h"
 #include "atomic"
 
-std::atomic<uint64_t> init_time{0};
+std::atomic<uint64_t> pebbles_init_time{0};
 extern leveldb::Env* env;
 
 namespace leveldb {
@@ -364,7 +364,7 @@ void TwoLevelIteratorGuards::InitDataBlock() {
       SetDataIterator(iter);
     }
   }
-  init_time+=env->NowMicros()-start_init;
+  pebbles_init_time+=env->NowMicros()-start_init;
 }
 
 
