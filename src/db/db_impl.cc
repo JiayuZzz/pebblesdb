@@ -733,13 +733,13 @@ Status DBImpl::WriteLevel0TableGuards(MemTable* mem, VersionEdit* edit,
 void DBImpl::CompactMemTableThread() {
   MutexLock l(&mutex_);
 
-  if(options_.exp_ops.noCompaction) return;
 
   FileLevelFilterBuilder file_level_filter_builder(options_.filter_policy);
 
   int cnt = 0;
   bool first_memtable_compaction = true;
-  while (options_.exp_ops.noCompaction || (!shutting_down_.Acquire_Load() && !allow_background_activity_)) {
+  if(!options_.exp_ops.noCompaction) {
+  while (!shutting_down_.Acquire_Load() && !allow_background_activity_) {
     bg_memtable_cv_.Wait();
   }
   while (!shutting_down_.Acquire_Load()) {
@@ -827,7 +827,7 @@ void DBImpl::CompactMemTableThread() {
     record_timer(TOTAL_MEMTABLE_COMPACTION);
     record_timer_simple(TOTAL_MEMTABLE_COMPACTION);
   }
-
+}
   Log(options_.info_log, "cleaning up CompactMemTableThread");
   num_bg_threads_ -= 1;
   bg_fg_cv_.SignalAll();
@@ -964,10 +964,9 @@ Status DBImpl::TEST_CompactMemTable() {
 
 void DBImpl::CompactLevelThread() {
   MutexLock l(&mutex_);
-  if(options_.exp_ops.noCompaction) return;
   FileLevelFilterBuilder file_level_filter_builder(options_.filter_policy);
-
-  while (options_.exp_ops.noCompaction || (!shutting_down_.Acquire_Load() && !allow_background_activity_)) {
+  if(!options_.exp_ops.noCompaction) {
+  while (!shutting_down_.Acquire_Load() && !allow_background_activity_) {
     bg_compaction_cv_.Wait();
   }
   while (!shutting_down_.Acquire_Load()) {
@@ -1008,6 +1007,7 @@ void DBImpl::CompactLevelThread() {
       env_->SleepForMicroseconds(seconds_to_sleep * 1000000);
       mutex_.Lock();
     }
+  }
   }
   Log(options_.info_log, "cleaning up CompactLevelThread");
   num_bg_threads_ -= 1;
