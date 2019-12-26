@@ -963,7 +963,9 @@ Status Version::Get(const ReadOptions& options,
       bool key_may_match = true;
 
 #ifdef FILE_LEVEL_FILTER
+      vset_->filter_mutex_.Lock();
       std::string* filter_string = vset_->file_level_bloom_filter[f->number];
+      vset_->filter_mutex_.UnLock();
       if (filter_string != NULL) {
 		  vstart_timer(GET_FILE_LEVEL_FILTER_CHECK, BEGIN, 1);
 		  Slice filter_slice = Slice(filter_string->data(), filter_string->size());
@@ -2122,12 +2124,14 @@ VersionSet::~VersionSet() {
 #endif
 
 #ifdef FILE_LEVEL_FILTER
+  filter_mutex_.Lock();
   for (std::map<uint64_t, std::string*>::iterator it = file_level_bloom_filter.begin(); it != file_level_bloom_filter.end(); ++it) {
 	  std::string* filter_string = (*it).second;
 	  if (filter_string != NULL) {
 		  delete filter_string;
 	  }
   }
+  filter_mutex_.Unlock();
 #endif
   current_->Unref();
   assert(dummy_versions_.next_ == &dummy_versions_);  // List must be empty
@@ -2188,11 +2192,14 @@ void VersionSet::PopulateBloomFilterForFile(FileMetaData* file, FileLevelFilterB
 	uint64_t file_number = file->number;
 	uint64_t file_size = file->file_size;
 	int cnt = 0;
-
+  filter_mutex_.Lock();
 	if (file_level_bloom_filter[file_number] != NULL) {
 		// This means that we have already calculated the bloom filter for this file and files are immutable (wrt a file number)
+    filter_mutex_.Unlock();
 		return;
 	}
+  filter_mutex_.Unlock();
+
 
     Iterator* iter = table_cache_->NewIterator(ReadOptions(), file_number, file_size);
     iter->SeekToFirst();
@@ -2232,16 +2239,20 @@ void VersionSet::InitializeTableCacheFileMetaData() {
 
 void VersionSet::AddFileLevelBloomFilterInfo(uint64_t file_number, std::string* filter_string) {
 #ifdef FILE_LEVEL_FILTER
+  filter_mutex_.Lock();
 	file_level_bloom_filter[file_number] = filter_string;
+  filter_mutex_.Unlock();
 #endif
 }
 void VersionSet::RemoveFileLevelBloomFilterInfo(uint64_t file_number) {
 #ifdef FILE_LEVEL_FILTER
+  filter_mutex_.Lock();
 	std::string* filter = file_level_bloom_filter[file_number];
 	if (filter != NULL) {
 		delete filter;
 	}
 	file_level_bloom_filter.erase(file_number);
+  filter_mutex_.Unlock();
 #endif
 }
 

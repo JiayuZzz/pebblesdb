@@ -930,6 +930,8 @@ class VersionSet {
   Timer* seek_thread_timers_[NUM_SEEK_THREADS];
   int stop_seek_threads_;
 
+  port::Mutex filter_mutex_;
+
   Env* getEnv() {
 	  return env_;
   }
