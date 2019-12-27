@@ -965,7 +965,7 @@ Status Version::Get(const ReadOptions& options,
 #ifdef FILE_LEVEL_FILTER
       vset_->filter_mutex_.Lock();
       std::string* filter_string = vset_->file_level_bloom_filter[f->number];
-      vset_->filter_mutex_.UnLock();
+      vset_->filter_mutex_.Unlock();
       if (filter_string != NULL) {
 		  vstart_timer(GET_FILE_LEVEL_FILTER_CHECK, BEGIN, 1);
 		  Slice filter_slice = Slice(filter_string->data(), filter_string->size());
