@@ -731,11 +731,11 @@ Status DBImpl::WriteLevel0TableGuards(MemTable* mem, VersionEdit* edit,
 
 void DBImpl::CompactMemTableThread() {
   MutexLock l(&mutex_);
-  if(options_.exp_ops.noCompaction) return;
   FileLevelFilterBuilder file_level_filter_builder(options_.filter_policy);
 
   int cnt = 0;
   bool first_memtable_compaction = true;
+  if(!options_.exp_ops.noCompaction) {
   while (!shutting_down_.Acquire_Load() && !allow_background_activity_) {
     bg_memtable_cv_.Wait();
   }
@@ -823,6 +823,7 @@ void DBImpl::CompactMemTableThread() {
     first_memtable_compaction = false;
     record_timer(TOTAL_MEMTABLE_COMPACTION);
     record_timer_simple(TOTAL_MEMTABLE_COMPACTION);
+  }
   }
 
   Log(options_.info_log, "cleaning up CompactMemTableThread");
@@ -961,9 +962,8 @@ Status DBImpl::TEST_CompactMemTable() {
 
 void DBImpl::CompactLevelThread() {
   MutexLock l(&mutex_);
-  if(options_.exp_ops.noCompaction) return;
   FileLevelFilterBuilder file_level_filter_builder(options_.filter_policy);
-
+  if(!options_.exp_ops.noCompaction) {
   while (!shutting_down_.Acquire_Load() && !allow_background_activity_) {
     bg_compaction_cv_.Wait();
   }
@@ -1005,6 +1005,7 @@ void DBImpl::CompactLevelThread() {
       env_->SleepForMicroseconds(seconds_to_sleep * 1000000);
       mutex_.Lock();
     }
+  }
   }
   Log(options_.info_log, "cleaning up CompactLevelThread");
   num_bg_threads_ -= 1;
