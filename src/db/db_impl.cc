@@ -199,6 +199,7 @@ DBImpl::DBImpl(const Options& raw_options, const std::string& dbname)
       table_cache_(),
       db_lock_(NULL),
       mutex_(),
+      write_mu_(),
       shutting_down_(NULL),
       mem_(new MemTable(internal_comparator_)),
       imm_(NULL),
@@ -231,7 +232,7 @@ DBImpl::DBImpl(const Options& raw_options, const std::string& dbname)
       backup_waiter_has_it_(false),
       backup_deferred_delete_(),
       bg_error_(),
-      num_bg_compaction_threads_(1) {
+      num_bg_compaction_threads_(8) {
   mutex_.Lock();
   mem_->Ref();
   has_imm_.Release_Store(NULL);
@@ -1881,7 +1882,6 @@ Status DBImpl::Write(const WriteOptions& options, WriteBatch* updates) {
 
   WriteBatch* updates_with_guards = NULL;
   if (s.ok() && updates != NULL) { // NULL batch is for compactions
-
     start_timer(WRITE_SET_SEQUENCE_CREATE_NEW_BATCH);
     WriteBatchInternal::SetSequence(updates, w.start_sequence_);
 
@@ -1899,6 +1899,7 @@ Status DBImpl::Write(const WriteOptions& options, WriteBatch* updates) {
       printf("Something went wrong with set guards\n");
       assert(0);
     }
+
 
     // Add to log and apply to memtable.  We do this without holding the lock
     // because both the log and the memtable are safe for concurrent access.
@@ -1918,7 +1919,7 @@ Status DBImpl::Write(const WriteOptions& options, WriteBatch* updates) {
       record_timer(WRITE_LOG_FILE_SYNC);
     }
   }
-
+  // write_mu_.Lock();
   start_timer(WRITE_SEQUENCE_WRITE_END_TOTAL);
   SequenceWriteEnd(&w, updates_with_guards, s);
   record_timer(WRITE_SEQUENCE_WRITE_END_TOTAL);
@@ -1926,6 +1927,7 @@ Status DBImpl::Write(const WriteOptions& options, WriteBatch* updates) {
   record_timer_simple(WRITE_OVERALL_TIME);
 
   delete updates_with_guards;
+  // write_mu_.Unlock();
 
   return s;
 }
@@ -2107,8 +2109,14 @@ void DBImpl::SequenceWriteEnd(Writer* w, WriteBatch* updates_with_guards, Status
 
   if (w->micros_ > config::kL0_SlowdownWritesTrigger) {
     start_timer(SWE_SLEEP);
-	env_->SleepForMicroseconds(w->micros_ - config::kL0_SlowdownWritesTrigger);
+	env_->SleepForMicroseconds(100);
     record_timer(SWE_SLEEP);
+  }
+
+  if (w->micros_ > config::kL0_StopWritesTrigger) {
+    env_->SleepForMicroseconds(1000);
+    // bg_fg_cv_.Wait();
+    // w->micros_ = versions_->NumLevelFiles(0);
   }
 }
 

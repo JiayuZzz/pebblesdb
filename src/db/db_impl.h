@@ -194,6 +194,7 @@ class DBImpl : public DB {
 
   // State below is protected by mutex_
   port::Mutex mutex_;
+  port::Mutex write_mu_;
   port::AtomicPointer shutting_down_;
   MemTable* mem_;
   MemTable* imm_;                // Memtable being compacted
